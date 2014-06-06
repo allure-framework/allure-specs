@@ -13,6 +13,6 @@ libraryDependencies += "ru.yandex.qatools.allure" % "allure-specs2_2.10" % "1.4.
 Then attach **AllureReporter** in build.sbt:
 ```scala
 testOptions in Test ++= Seq(
-    Tests.Argument(TestFrameworks.Specs2, "-notifier", "ru.yandex.qatools.allure.specs2.AllureReporter")
+  Tests.Argument(TestFrameworks.Specs2, "notifier", "ru.yandex.qatools.allure.specs2.AllureNotifier")
 )
 ```
