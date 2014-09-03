@@ -2,7 +2,7 @@
 This adapter allows to retrieve test execution data from Specs2 framework and convert it to the form suitable for Allure report generation.
 
 ## Example project
-Example project is located at: https://github.com/allure-framework/allure-specs2-example
+Example project is located at: https://github.com/allure-framework/allure-specs-example
 
 ## Usage
 **In order to use this adapter you need to have JDK 1.7+ installed.** To enabled adapter simply add the following dependency to build.sbt:
