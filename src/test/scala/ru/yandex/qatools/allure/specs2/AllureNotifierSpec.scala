@@ -10,6 +10,8 @@ import org.specs2.mock.Mockito
 import org.mockito.Mockito.doReturn
 import org.specs2.specification.BeforeAfterExample
 
+import scala.collection.mutable
+
 object AllureNotifierSpec extends Specification with Mockito with BeforeAfterExample {
   
   var allure: Allure = _
@@ -29,6 +31,7 @@ object AllureNotifierSpec extends Specification with Mockito with BeforeAfterExa
   override def before = {
     allure = mock[Allure]
     notifier = spy(new AllureNotifier)
+    notifier.setStack(new mutable.Stack[String])
     notifier.setLifecycle(allure)
     doReturn(specUuid).when(notifier).getSpecUuid(any[String])
   }
@@ -43,15 +46,17 @@ object AllureNotifierSpec extends Specification with Mockito with BeforeAfterExa
 
     "fire Allure TestSuiteStarted event on spec start" in {
       notifier.specStart(specTitle, specLocation)
-      there was one(allure).fire(eql(new TestSuiteStartedEvent(specUuid, specLocation)))
+      there was one(allure).fire(eql(new TestSuiteStartedEvent(specUuid, specTitle)))
     }
 
     "fire TestSuiteFinished event on spec end" in {
+      notifier.stack.push(specTitle)
       notifier.specEnd(specTitle, specLocation)
       there was one(allure).fire(eql(new TestSuiteFinishedEvent(specUuid)))
     }
 
     "fire TestCaseStarted event on context start" in {
+      notifier.stack.push(specTitle)
       notifier.contextStart(contextText, specLocation)
       there was one(allure).fire(eql(new TestCaseStartedEvent(specUuid, contextText)))
     }

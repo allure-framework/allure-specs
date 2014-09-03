@@ -1,18 +1,21 @@
 package ru.yandex.qatools.allure.specs2
 
+import java.util.UUID
+
+import org.specs2.execute.Details
+import org.specs2.reporter.Notifier
 import ru.yandex.qatools.allure.Allure
 import ru.yandex.qatools.allure.events._
-import java.util.UUID
-import scala.Some
-import org.specs2.reporter.Notifier
-import org.specs2.execute.Details
+import scala.collection.mutable
 
 class AllureNotifier extends Notifier {
-  
+
+  private var st = new mutable.Stack[String]
+
   private var lc = Allure.LIFECYCLE
 
-  private val specLocationToUUIDMap = scala.collection.mutable.HashMap[String, String]()
-  
+  private val specTitleToUUIDMap = scala.collection.mutable.HashMap[String, String]()
+
   override def examplePending(name: String, message: String, duration: Long): Unit = {
     stepCanceled()
     stepFinished()
@@ -42,24 +45,39 @@ class AllureNotifier extends Notifier {
 
   override def contextEnd(text: String, location: String): Unit = testCaseFinished()
 
-  override def contextStart(text: String, location: String): Unit = testCaseStarted(getSpecUuid(location), text)
+  override def contextStart(text: String, location: String): Unit = {
+    val specTitle = stack.head
+    testCaseStarted(specTitle, text)
+  }
 
-  override def specEnd(title: String, location: String): Unit = testSuiteFinished(getSpecUuid(location))
+  override def specEnd(title: String, location: String): Unit = {
+    val specTitle = stack.pop()
+    testSuiteFinished(getSpecUuid(specTitle))
+  }
 
-  override def specStart(title: String, location: String): Unit = testSuiteStarted(getSpecUuid(location), location)
+  override def specStart(title: String, location: String): Unit = {
+    stack.push(title)
+    testSuiteStarted(getSpecUuid(title), title)
+  }
 
-  def getSpecUuid(specLocation: String): String = specLocationToUUIDMap.get(specLocation) match {
+  def getSpecUuid(specTitle: String): String = specTitleToUUIDMap.get(specTitle) match {
     case Some(uuid) => uuid
     case None =>
       val uuid = UUID.randomUUID().toString
-      specLocationToUUIDMap += specLocation -> uuid
+      specTitleToUUIDMap += specTitle -> uuid
       uuid
   }
 
   def lifecycle = lc
-
+  
   def setLifecycle(lifecycle: Allure) {
     lc = lifecycle
+  }
+
+  def stack = st
+
+  def setStack(stack: mutable.Stack[String]) {
+    st = stack
   }
 
   private def testSuiteStarted(uuid: String, suiteId: String) {
@@ -82,17 +100,17 @@ class AllureNotifier extends Notifier {
   private def stepCanceled() {
     lifecycle.fire(new StepCanceledEvent)
   }
-  
+
   private def stepStarted(stepName: String) {
     lifecycle.fire(new StepStartedEvent(stepName))
   }
-  
+
   private def stepFinished() {
     lifecycle.fire(new StepFinishedEvent)
   }
-  
+
   private def stepFailed(throwable: Throwable) {
     lifecycle.fire(new StepFailureEvent().withThrowable(throwable))
   }
-  
+
 }
