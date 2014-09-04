@@ -1,5 +1,5 @@
-# Allure Specs2 Adapter
-This adapter allows to retrieve test execution data from Specs2 framework and convert it to the form suitable for Allure report generation.
+# Allure Specs Adapter
+This adapter allows to retrieve test execution data from Specs framework and convert it to the form suitable for Allure report generation.
 
 ## Example project
 Example project is located at: https://github.com/allure-framework/allure-specs-example
